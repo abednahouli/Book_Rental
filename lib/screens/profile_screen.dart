@@ -8,6 +8,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool isEdit = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,22 +25,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 400,
               width: 300,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(70),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black54,
-                      spreadRadius: 5,
-                      blurRadius: 10,
-                      offset: Offset(5, 3), // changes position of shadow
-                    ),
-                    BoxShadow(
-                      color: Colors.lightGreen[100],
-                      spreadRadius: 5,
-                      blurRadius: 10,
-                      offset: Offset(-5, -3), // changes position of shadow
-                    ),
-                  ]),
+                borderRadius: BorderRadius.circular(70),
+                color: Colors.white,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -49,8 +38,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.all(20),
                         child: Container(
                           decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset:
+                                    Offset(5, 5), // changes position of shadow
+                              ),
+                              BoxShadow(
+                                color: Colors.grey[200],
+                                spreadRadius: 1,
+                                blurRadius: 2,
+                                offset: Offset(
+                                    -5, -5), // changes position of shadow
+                              ),
+                            ],
                             borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: Colors.grey, width: 3),
                             image: DecorationImage(
                               image: NetworkImage(
                                 futureSnapshot2.data.data()['image_url'],
@@ -64,37 +68,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        futureSnapshot2.data.data()['username'],
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            color: Colors.grey[700]),
-                      ),
-                    ],
-                  ),
+                  if (!isEdit)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          futureSnapshot2.data.data()['username'],
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                              color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  if (isEdit)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Edit mode on',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
                   SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         futureSnapshot2.data.data()['email'],
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Phone Nb. : 76071380',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -109,7 +114,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          setState(() {
+            isEdit = !isEdit;
+          });
+        },
         child: Icon(Icons.edit),
         backgroundColor: Colors.green[900],
       ),
@@ -118,12 +127,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<DocumentSnapshot> _getCurrentUserData() async {
     // ignore: deprecated_member_use
+    // ignore: await_only_futures
     User user = await FirebaseAuth.instance.currentUser;
     final userData = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .get();
-    print(userData);
+    print(userData.data());
     return userData;
   }
 }
