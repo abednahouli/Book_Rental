@@ -26,6 +26,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 300,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(70),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(5, 5), // changes position of shadow
+                  ),
+                  BoxShadow(
+                    color: Colors.green[50],
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                    offset: Offset(-5, -5), // changes position of shadow
+                  ),
+                ],
                 color: Colors.white,
               ),
               child: Column(

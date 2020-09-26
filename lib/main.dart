@@ -1,4 +1,6 @@
 import 'package:Book_Rental/screens/add_book_screen.dart';
+import 'package:Book_Rental/screens/book_details_screen.dart';
+import 'package:Book_Rental/screens/chats.dart';
 import 'package:Book_Rental/screens/favorites_screen.dart';
 import 'package:Book_Rental/screens/home_screen.dart';
 import 'package:Book_Rental/screens/profile_screen.dart';
@@ -27,7 +29,7 @@ class MyApp extends StatelessWidget {
           if (userSnapshot.hasData) {
             return DefaultTabController(
               key: _tabKey,
-              length: 3,
+              length: 4,
               child: Scaffold(
                 appBar: AppBar(
                   title: Text('Rent Me!'),
@@ -45,12 +47,14 @@ class MyApp extends StatelessWidget {
                   bottom: (TabBar(tabs: [
                     Tab(icon: Icon(Icons.home)),
                     Tab(icon: Icon(Icons.favorite)),
+                    Tab(icon: Icon(Icons.chat)),
                     Tab(icon: Icon(Icons.person)),
                   ])),
                 ),
                 body: TabBarView(children: [
                   HomeScreen(),
                   FavoritesScreen(),
+                  Chats(),
                   ProfileScreen(),
                 ]),
               ),
@@ -61,6 +65,7 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         AddBookScreen.routeName: (ctx) => AddBookScreen(),
+        BookDetailsScreen.routeName: (ctx)=> BookDetailsScreen(),
       },
     );
   }

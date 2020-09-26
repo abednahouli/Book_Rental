@@ -19,7 +19,8 @@ class _UserImagePickerState extends State<UserImagePicker> {
   File _image;
 
   Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.camera,imageQuality: 50,maxWidth: 150);
+    // ignore: deprecated_member_use
+    var image = await ImagePicker.pickImage(source: ImageSource.camera,imageQuality: 100,maxWidth: 150);
 
     setState(() {
       _image = image;
