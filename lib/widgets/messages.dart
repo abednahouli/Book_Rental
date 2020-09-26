@@ -3,14 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Messages extends StatelessWidget {
+class Messages extends StatefulWidget {
   String chatterId;
   String chatterName;
+
   Messages(this.chatterId, this.chatterName);
+
+  @override
+  _MessagesState createState() => _MessagesState();
+}
+
+class _MessagesState extends State<Messages> {
+  String cU = '';
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _getCurrentUserName(),
+      future: _getCurrentId(),
       // ignore: missing_return
       builder: (ctx, futureSnapshot) {
         if (futureSnapshot.connectionState == ConnectionState.waiting) {
@@ -27,21 +35,35 @@ class Messages extends StatelessWidget {
                   child: CircularProgressIndicator(),
                 );
               }
+              _getCurrentUserName();
               final chatDocs = chatSnapshot.data.documents;
-              print(chatDocs.length);
-              print(chatterId);
+              print(widget.chatterName);
+              print(cU);
+              print(chatDocs[1].data()['receiverName']);
               return ListView.builder(
                   reverse: true,
                   itemCount: chatDocs.length,
                   itemBuilder: (ctx, index) {
-                    if ((chatDocs[index].data()['senderId'].toString() !=
-                            chatterId) &&
-                        (chatDocs[index].data()['senderId'].toString() !=
-                            FirebaseAuth.instance.currentUser.uid)) return null;
-                    if ((chatDocs[index].data()['receiverId'].toString() !=
-                            chatterId) &&
-                        (chatDocs[index].data()['receiverId'].toString() !=
-                            FirebaseAuth.instance.currentUser.uid)) return null;
+                    if ((chatDocs[index].data()['senderName'].toString() !=
+                            widget.chatterName) &&
+                        (chatDocs[index].data()['senderName'].toString() !=
+                            cU)) {
+                      print('1');
+                      return Container(
+                        height: 0,
+                        width: 0,
+                      );
+                    }
+                    if ((chatDocs[index].data()['receiverName'].toString() !=
+                            widget.chatterName) &&
+                        (chatDocs[index].data()['receiverName'].toString() !=
+                            cU)) {
+                      print('2');
+                      return Container(
+                        height: 0,
+                        width: 0,
+                      );
+                    }
                     return MessageBubble(
                       chatDocs[index].data()['text'],
                       chatDocs[index].data()['senderName'],
@@ -55,11 +77,20 @@ class Messages extends StatelessWidget {
       },
     );
   }
+
+  Future<User> _getCurrentId() async {
+    // ignore: deprecated_member_use
+    String userid = await FirebaseAuth.instance.currentUser.uid;
+    final userdata =
+        await FirebaseFirestore.instance.collection('users').doc(userid).get();
+    final username = userdata.data()['username'];
+    cU = username;
+    User user = await FirebaseAuth.instance.currentUser;
+
+    return user;
+  }
+
+  Future<void> _getCurrentUserName() async {}
 }
 
 // ignore: deprecated_member_use
-Future<User> _getCurrentUserName() async {
-  // ignore: deprecated_member_use
-  User user = await FirebaseAuth.instance.currentUser;
-  return user;
-}

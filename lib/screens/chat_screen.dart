@@ -12,26 +12,26 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: _getUsersData(),
-        builder: (ctx, futurSnapshot) {
-          try {
-            return Scaffold(
-              appBar: AppBar(
-                title: Text(futurSnapshot.data),
-              ),
-              // ignore: deprecated_member_use
-              body: Container(
-                child: Column(
-                  children: [
-                    Expanded(child: Messages(chatterId, futurSnapshot.data)),
-                    NewMessage(chatterId, futurSnapshot.data),
-                  ],
-                ),
-              ),
+        builder: (ctx, futureSnapshot) {
+          if (futureSnapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
             );
-          } catch (err) {
-            print('no data');
           }
-          return Container();
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(futureSnapshot.data),
+            ),
+            // ignore: deprecated_member_use
+            body: Container(
+              child: Column(
+                children: [
+                  Expanded(child: Messages(chatterId, futureSnapshot.data)),
+                  NewMessage(chatterId, futureSnapshot.data),
+                ],
+              ),
+            ),
+          );
         });
   }
 
