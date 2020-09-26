@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 class BookDetailsScreen extends StatelessWidget {
   static const routeName = '/book-details';
 
-  String imageUrl;
-  String bookName;
-  String bookPrice;
-  Timestamp publishYear;
-  String userId;
+  final String imageUrl;
+  final String bookName;
+  final String bookPrice;
+  final Timestamp publishYear;
+  final String userId;
 
   BookDetailsScreen(
       {this.imageUrl,

@@ -13,31 +13,35 @@ class ChatScreen extends StatelessWidget {
     return FutureBuilder(
         future: _getUsersData(),
         builder: (ctx, futurSnapshot) {
-          final chatter = futurSnapshot.data.data()['username'];
-
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(chatter),
-            ),
-            // ignore: deprecated_member_use
-            body: Container(
-              child: Column(
-                children: [
-                  Expanded(child: Messages(chatterId, chatter)),
-                  NewMessage(chatterId, chatter),
-                ],
+          try {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(futurSnapshot.data),
               ),
-            ),
-          );
+              // ignore: deprecated_member_use
+              body: Container(
+                child: Column(
+                  children: [
+                    Expanded(child: Messages(chatterId, futurSnapshot.data)),
+                    NewMessage(chatterId, futurSnapshot.data),
+                  ],
+                ),
+              ),
+            );
+          } catch (err) {
+            print('no data');
+          }
+          return Container();
         });
   }
 
-  Future<DocumentSnapshot> _getUsersData() async {
+  Future<String> _getUsersData() async {
     // ignore: deprecated_member_use
     DocumentSnapshot users = await FirebaseFirestore.instance
         .collection('users')
         .doc(chatterId)
         .get();
-    return users;
+    final user = users.data()['username'];
+    return user;
   }
 }
