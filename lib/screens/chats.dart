@@ -29,9 +29,10 @@ class _ChatsState extends State<Chats> {
             if (chats[j].data()['senderName'] == userN) {
               duplicateNames.add(chats[j].data()['receiverName']);
               duplicateIds.add(chats[j].data()['receiverId']);
-            } else
+            } else if (chats[j].data()['senderName'] == userN) {
               duplicateNames.add(chats[j].data()['senderName']);
-            duplicateIds.add(chats[j].data()['senderId']);
+              duplicateIds.add(chats[j].data()['senderId']);
+            }
           }
 
           duplicateNames = duplicateNames.toSet().toList();

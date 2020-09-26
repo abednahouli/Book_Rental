@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _getBooks(),
         builder: (ctx, futureSnapshot) {
           if (futureSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor,));
           }
           final bookDocs = futureSnapshot.data.documents;
 
