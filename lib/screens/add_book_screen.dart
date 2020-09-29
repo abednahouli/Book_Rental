@@ -81,7 +81,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
       final url = await ref.getDownloadURL();
 
-      final query = await FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('books')
           .doc(newBookId)
           .update({'image_url': url});

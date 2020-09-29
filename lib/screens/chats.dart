@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:Book_Rental/screens/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class Chats extends StatefulWidget {
   @override
@@ -19,57 +18,60 @@ class _ChatsState extends State<Chats> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: _getchatslist(),
-        builder: (context, futureSnapshot) {
-          if (futureSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          final chats = futureSnapshot.data;
-
-          for (var j = 0; j < chats.length; j++) {
-            if (chats[j]['senderName'] == userN) {
-              duplicateNames.add(chats[j]['receiverName']);
-              duplicateIds.add(chats[j]['receiverId']);
-            } else if (chats[j]['receiverName'].toString() == userN) {
-              duplicateNames.add(chats[j]['senderName']);
-              duplicateIds.add(chats[j]['senderId']);
+      body: Container(
+        color: isLight ? Colors.green[100] : Colors.blueGrey,
+        child: FutureBuilder(
+          future: _getchatslist(),
+          builder: (context, futureSnapshot) {
+            if (futureSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
             }
-          }
-          duplicateNames = duplicateNames.toSet().toList();
-          duplicateIds = duplicateIds.toSet().toList();
-          for (var i = 0; i < duplicateIds.length; i++) {
-            if (duplicateIds[i] == userId) {
-              duplicateIds.remove(duplicateIds[i]);
-            }
-          }
 
-          return ListView.builder(
-            itemCount: duplicateNames.length,
-            itemBuilder: (ctx, i) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: InkWell(
-                  child: Card(
-                    elevation: 5,
-                    child: ListTile(
-                      leading: Text(duplicateNames[i]),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                ChatScreen(duplicateIds[i]),
-                          ),
-                        );
-                      },
+            final chats = futureSnapshot.data;
+
+            for (var j = 0; j < chats.length; j++) {
+              if (chats[j]['senderName'] == userN) {
+                duplicateNames.add(chats[j]['receiverName']);
+                duplicateIds.add(chats[j]['receiverId']);
+              } else if (chats[j]['receiverName'].toString() == userN) {
+                duplicateNames.add(chats[j]['senderName']);
+                duplicateIds.add(chats[j]['senderId']);
+              }
+            }
+            duplicateNames = duplicateNames.toSet().toList();
+            duplicateIds = duplicateIds.toSet().toList();
+            for (var i = 0; i < duplicateIds.length; i++) {
+              if (duplicateIds[i] == userId) {
+                duplicateIds.remove(duplicateIds[i]);
+              }
+            }
+
+            return ListView.builder(
+              itemCount: duplicateNames.length,
+              itemBuilder: (ctx, i) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    child: Card(
+                      elevation: 5,
+                      child: ListTile(
+                        leading: Text(duplicateNames[i]),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  ChatScreen(duplicateIds[i]),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

@@ -1,11 +1,19 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
+  ProfileScreen(this.function);
+
+  final void Function()function;
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
+
+bool isLight = true;
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isEdit = false;
@@ -13,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[100],
+      backgroundColor: isLight ? Colors.green[100] : Colors.blueGrey,
       body: FutureBuilder(
         future: _getCurrentUserData(),
         builder: (ctx, futureSnapshot2) {
@@ -42,65 +50,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
                 color: Colors.white,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset:
-                                    Offset(5, 5), // changes position of shadow
-                              ),
-                              BoxShadow(
-                                color: Colors.grey[200],
-                                spreadRadius: 1,
-                                blurRadius: 2,
-                                offset: Offset(
-                                    -5, -5), // changes position of shadow
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(100),
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                futureSnapshot2.data.data()['image_url'],
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          width: 200,
-                          height: 200,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (!isEdit)
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          futureSnapshot2.data.data()['username'],
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                              color: Colors.grey[700]),
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 1,
+                                  blurRadius: 5,
+                                  offset: Offset(
+                                      5, 5), // changes position of shadow
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey[200],
+                                  spreadRadius: 1,
+                                  blurRadius: 2,
+                                  offset: Offset(
+                                      -5, -5), // changes position of shadow
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(100),
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  futureSnapshot2.data.data()['image_url'],
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            width: 200,
+                            height: 200,
+                          ),
                         ),
                       ],
                     ),
-                  if (isEdit)
+                    if (!isEdit)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            futureSnapshot2.data.data()['username'],
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                                color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                    if (isEdit)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Edit mode on',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Edit mode on',
+                          futureSnapshot2.data.data()['email'],
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -108,20 +130,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        futureSnapshot2.data.data()['email'],
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ],
+                    Row(mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text(isLight?'Light Mode':'Dark Mode'),
+                        Switch(
+                          value: !isLight,
+                          onChanged: (newValue) {
+                            setState(() {
+                              isLight = !newValue;
+                              widget.function();
+                              _setMode();
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -134,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
         },
         child: Icon(Icons.edit),
-        backgroundColor: Colors.green[900],
+        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }
@@ -149,5 +173,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .get();
     print(userData.data());
     return userData;
+  }
+
+  Future<void> _setMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lightMode = json.encode(
+      {
+        'Mode': isLight,
+      },
+    );
+    prefs.setString('LightMode', lightMode);
   }
 }

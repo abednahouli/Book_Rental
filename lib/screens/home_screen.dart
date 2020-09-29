@@ -3,6 +3,7 @@ import 'package:Book_Rental/screens/book_details_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,11 +14,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: isLight ? Colors.white : Colors.blueGrey,
       body: FutureBuilder(
         future: _getBooks(),
         builder: (ctx, futureSnapshot) {
           if (futureSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor,));
+            return Center(
+                child: CircularProgressIndicator(
+              backgroundColor: Theme.of(context).primaryColor,
+            ));
           }
           final bookDocs = futureSnapshot.data.documents;
 
@@ -73,7 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       bookDocs[i].data()['bookName'],
                                       style: TextStyle(
-                                        color: Colors.amber,
+                                        color: !isLight
+                                            ? Colors.blue
+                                            : Colors.amber,
                                         fontSize: 27,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -93,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Icon(
                                   Icons.favorite_border,
                                   size: 40,
-                                  color: Colors.amber,
+                                  color: !isLight ? Colors.blue : Colors.amber,
                                 )
                               ],
                             ),
