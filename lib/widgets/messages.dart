@@ -27,8 +27,12 @@ class _MessagesState extends State<Messages> {
         }
         return StreamBuilder(
           stream: FirebaseFirestore.instance
+              .collection('coms')
+              .doc(FirebaseAuth.instance.currentUser.uid)
+              .collection('chats')
+              .doc(widget.chatterId)
               .collection('messages')
-              .orderBy('createdAt', descending: true)
+              .orderBy('createdAt', descending: true).limit(50)
               .snapshots(),
           builder: (ctx, chatSnapshot) {
             if (chatSnapshot.connectionState == ConnectionState.waiting) {
@@ -36,38 +40,28 @@ class _MessagesState extends State<Messages> {
                 child: CircularProgressIndicator(),
               );
             }
-            final chatDocs = chatSnapshot.data.documents;
-            print(widget.chatterName);
-            print(cU);
-            print(chatDocs[1].data()['receiverName']);
-            return ListView.builder(
-              reverse: true,
-              itemCount: chatDocs.length,
-              itemBuilder: (ctx, index) {
-                if ((chatDocs[index].data()['senderName'].toString() !=
-                        widget.chatterName) &&
-                    (chatDocs[index].data()['senderName'].toString() != cU)) {
-                  return Container(
-                    height: 0,
-                    width: 0,
+            try {
+              final chatDocs = chatSnapshot.data.documents;
+              return ListView.builder(
+                reverse: true,
+                itemCount: chatDocs.length,
+                itemBuilder: (ctx, index) {
+                  return MessageBubble(
+                    chatDocs[index].data()['text'],
+                    chatDocs[index].data()['senderName'],
+                    chatDocs[index].data()['senderImage'],
+                    chatDocs[index].data()['senderId'] ==
+                        futureSnapshot.data.uid,
+                    key: ValueKey(chatDocs[index].documentID),
                   );
-                }
-                if ((chatDocs[index].data()['receiverName'].toString() !=
-                        widget.chatterName) &&
-                    (chatDocs[index].data()['receiverName'].toString() != cU)) {
-                  return Container(
-                    height: 0,
-                    width: 0,
-                  );
-                }
-                return MessageBubble(
-                  chatDocs[index].data()['text'],
-                  chatDocs[index].data()['senderName'],
-                  chatDocs[index].data()['senderImage'],
-                  chatDocs[index].data()['senderId'] == futureSnapshot.data.uid,
-                  key: ValueKey(chatDocs[index].documentID),
-                );
-              },
+                },
+              );
+            } catch (err) {}
+            return Center(
+              child: Text(
+                'Start Texting...',
+                style: TextStyle(color: Colors.grey),
+              ),
             );
           },
         );

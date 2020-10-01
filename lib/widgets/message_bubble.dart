@@ -14,20 +14,7 @@ class MessageBubble extends StatelessWidget {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
-        if (!isMe)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              image: DecorationImage(
-                image: NetworkImage(
-                  userImage,
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-            width: 35,
-            height: 35,
-          ),
+        
         Container(
           decoration: BoxDecoration(
             color: isMe ? Colors.green : Theme.of(context).accentColor,
@@ -69,20 +56,6 @@ class MessageBubble extends StatelessWidget {
             ],
           ),
         ),
-        if (isMe)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              image: DecorationImage(
-                image: NetworkImage(
-                  userImage,
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-            width: 35,
-            height: 35,
-          ),
       ],
     );
   }

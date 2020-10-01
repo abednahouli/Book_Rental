@@ -11,9 +11,6 @@ class Chats extends StatefulWidget {
 
 class _ChatsState extends State<Chats> {
   String userN = '';
-  String userId = '';
-  List duplicateNames = [];
-  List duplicateIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -21,33 +18,20 @@ class _ChatsState extends State<Chats> {
       body: Container(
         color: isLight ? Colors.green[100] : Colors.blueGrey,
         child: FutureBuilder(
-          future: _getchatslist(),
+          future: FirebaseFirestore.instance
+              .collection('coms')
+              .doc(FirebaseAuth.instance.currentUser.uid)
+              .collection('chats')
+              .get(),
           builder: (context, futureSnapshot) {
             if (futureSnapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
 
-            final chats = futureSnapshot.data;
-
-            for (var j = 0; j < chats.length; j++) {
-              if (chats[j]['senderName'] == userN) {
-                duplicateNames.add(chats[j]['receiverName']);
-                duplicateIds.add(chats[j]['receiverId']);
-              } else if (chats[j]['receiverName'].toString() == userN) {
-                duplicateNames.add(chats[j]['senderName']);
-                duplicateIds.add(chats[j]['senderId']);
-              }
-            }
-            duplicateNames = duplicateNames.toSet().toList();
-            duplicateIds = duplicateIds.toSet().toList();
-            for (var i = 0; i < duplicateIds.length; i++) {
-              if (duplicateIds[i] == userId) {
-                duplicateIds.remove(duplicateIds[i]);
-              }
-            }
+            final chats = futureSnapshot.data.documents;
 
             return ListView.builder(
-              itemCount: duplicateNames.length,
+              itemCount: chats.length,
               itemBuilder: (ctx, i) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -55,12 +39,12 @@ class _ChatsState extends State<Chats> {
                     child: Card(
                       elevation: 5,
                       child: ListTile(
-                        leading: Text(duplicateNames[i]),
+                        leading: Text(chats[i].data()['Name']),
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (BuildContext context) =>
-                                  ChatScreen(duplicateIds[i]),
+                                  ChatScreen(chats[i].data()['Id']),
                             ),
                           );
                         },
@@ -74,32 +58,5 @@ class _ChatsState extends State<Chats> {
         ),
       ),
     );
-  }
-
-  Future _getchatsonline() async {
-    final userId1 = FirebaseAuth.instance.currentUser.uid;
-    userId = userId1;
-    final user =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    final username = user.data()['username'].toString();
-    userN = username;
-    final chats = await FirebaseFirestore.instance
-        .collection('messages')
-        .orderBy('createdAt', descending: true)
-        .get();
-    final List chatList = [chats.docs];
-    return chatList;
-  }
-
-  Future<List> _getchatslist() async {
-    final prChats = await _getchatsonline();
-    List newChats = [];
-    for (var i = 0; i < prChats[0].length; i++) {
-      if (prChats[0][i].data()['senderName'] == userN ||
-          prChats[0][i].data()['receiverName'] == userN) {
-        newChats.add(prChats[0][i].data());
-      }
-    }
-    return newChats;
   }
 }

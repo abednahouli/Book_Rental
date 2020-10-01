@@ -171,7 +171,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .collection('users')
         .doc(user.uid)
         .get();
-    print(userData.data());
     return userData;
   }
 

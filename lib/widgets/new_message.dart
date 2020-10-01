@@ -23,7 +23,40 @@ class _NewMessageState extends State<NewMessage> {
         .collection('users')
         .doc(user.uid)
         .get();
-    FirebaseFirestore.instance.collection('messages').add({
+    FirebaseFirestore.instance
+        .collection('coms')
+        .doc(user.uid)
+        .collection('chats')
+        .doc(widget.chatterId)
+        .set({'Id': widget.chatterId, 'Name': widget.chatterName});
+    FirebaseFirestore.instance
+        .collection('coms')
+        .doc(user.uid)
+        .collection('chats')
+        .doc(widget.chatterId)
+        .collection('messages')
+        .add({
+      'text': _enteredMessage,
+      'createdAt': Timestamp.now(),
+      'senderId': user.uid,
+      'receiverId': widget.chatterId,
+      'senderName': userData.data()['username'],
+      'receiverName': widget.chatterName,
+      'senderImage': userData.data()['image_url'],
+    });
+    FirebaseFirestore.instance
+        .collection('coms')
+        .doc(widget.chatterId)
+        .collection('chats')
+        .doc(user.uid)
+        .set({'Id': user.uid, 'Name': userData.data()['username']});
+    FirebaseFirestore.instance
+        .collection('coms')
+        .doc(widget.chatterId)
+        .collection('chats')
+        .doc(user.uid)
+        .collection('messages')
+        .add({
       'text': _enteredMessage,
       'createdAt': Timestamp.now(),
       'senderId': user.uid,
