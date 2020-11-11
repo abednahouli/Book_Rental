@@ -5,10 +5,10 @@ import 'package:flutter/cupertino.dart';
 
 class Profile extends ChangeNotifier{
   String email;
-  String image_url;
+  String imageUrl;
   String username;
 
-  Profile({this.email,this.image_url,this.username});
+  Profile({this.email,this.imageUrl,this.username});
 
   Future<void> getCurrentUserData() async {
     User user = FirebaseAuth.instance.currentUser;
@@ -17,7 +17,7 @@ class Profile extends ChangeNotifier{
         .doc(user.uid)
         .get();
     email=response.data()["email"];
-    image_url=response.data()["image_url"];
+    imageUrl=response.data()["image_url"];
     username=response.data()["username"];
     notifyListeners();
   }

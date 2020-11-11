@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:Book_Rental/models/colorMode.dart';
 import 'package:Book_Rental/models/profileModel.dart';
 import 'package:Book_Rental/screens/add_book_screen.dart';
 import 'package:Book_Rental/screens/book_details_screen.dart';
@@ -19,12 +18,15 @@ import 'screens/auth_Screen.dart';
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MultiProvider(
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => Profile()),
+        ChangeNotifierProvider(create: (context) => ColorMode()),
       ],
       child: MyApp(),
-    ),);
+    ),
+  );
 }
 
 Color newColor = Colors.blueGrey[900];
@@ -36,64 +38,65 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _tabKey = GlobalKey<ScaffoldState>();
-@override
+  @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Provider.of<Profile>(context, listen: false).getCurrentUserData();
   }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primaryColor: isLight ? Colors.green[900] : newColor),
-      debugShowCheckedModeBanner: false,
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (ctx, userSnapshot) {
-          if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return FlutterLogo();
-          }
-          if (userSnapshot.hasData) {
-            return DefaultTabController(
-              key: _tabKey,
-              length: 4,
-              child: Scaffold(
-                appBar: AppBar(
-                  title: Text('Book Me!'),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: IconButton(
-                        icon: Icon(Icons.exit_to_app),
-                        onPressed: () {
-                          FirebaseAuth.instance.signOut();
-                        },
-                      ),
-                    )
-                  ],
-                  bottom: (TabBar(tabs: [
-                    Tab(icon: Icon(Icons.home)),
-                    Tab(icon: Icon(Icons.favorite)),
-                    Tab(icon: Icon(Icons.chat)),
-                    Tab(icon: Icon(Icons.person)),
-                  ])),
+    return StreamBuilder(stream: Provider.of<ColorMode>(context,listen: true).returnChangedMainColor(),builder: (context, snapshot) => MaterialApp(
+        theme: snapshot.data,
+        debugShowCheckedModeBanner: false,
+        home: StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (ctx, userSnapshot) {
+            if (userSnapshot.connectionState == ConnectionState.waiting) {
+              return FlutterLogo();
+            }
+            if (userSnapshot.hasData) {
+              return DefaultTabController(
+                key: _tabKey,
+                length: 4,
+                child: Scaffold(
+                  appBar: AppBar(
+                    title: Text('Book Me!'),
+                    actions: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10.0),
+                        child: IconButton(
+                          icon: Icon(Icons.exit_to_app),
+                          onPressed: () {
+                            FirebaseAuth.instance.signOut();
+                          },
+                        ),
+                      )
+                    ],
+                    bottom: (TabBar(tabs: [
+                      Tab(icon: Icon(Icons.home)),
+                      Tab(icon: Icon(Icons.favorite)),
+                      Tab(icon: Icon(Icons.chat)),
+                      Tab(icon: Icon(Icons.person)),
+                    ])),
+                  ),
+                  body: TabBarView(children: [
+                    HomeScreen(),
+                    FavoritesScreen(),
+                    Chats(),
+                    ProfileScreen(changeState),
+                  ]),
                 ),
-                body: TabBarView(children: [
-                  HomeScreen(),
-                  FavoritesScreen(),
-                  Chats(),
-                  ProfileScreen(changeState),
-                ]),
-              ),
-            );
-          }
-          return AuthScreen();
+              );
+            }
+            return AuthScreen();
+          },
+        ),
+        routes: {
+          AddBookScreen.routeName: (ctx) => AddBookScreen(),
+          BookDetailsScreen.routeName: (ctx) => BookDetailsScreen(),
         },
       ),
-      routes: {
-        AddBookScreen.routeName: (ctx) => AddBookScreen(),
-        BookDetailsScreen.routeName: (ctx) => BookDetailsScreen(),
-      },
     );
   }
 

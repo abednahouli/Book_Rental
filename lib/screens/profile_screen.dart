@@ -1,11 +1,7 @@
-import 'dart:convert';
-
+import 'package:Book_Rental/models/colorMode.dart';
 import 'package:Book_Rental/models/profileModel.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   ProfileScreen(this.function);
@@ -77,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(100),
                             image: DecorationImage(
                               image: NetworkImage(
-                                profile.image_url,
+                                profile.imageUrl,
                               ),
                               fit: BoxFit.cover,
                             ),
@@ -135,9 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         value: !isLight,
                         onChanged: (newValue) {
                           setState(() {
-                            isLight = !newValue;
-                            widget.function();
-                            _setMode();
+                            Provider.of<ColorMode>(context,listen: false).changeMainColor();
                           });
                         },
                       ),
@@ -149,34 +143,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            isEdit = !isEdit;
-          });
-        },
-        child: Icon(Icons.edit),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
     );
   }
 
-  Future<DocumentSnapshot> _getCurrentUserData() async {
-    User user = FirebaseAuth.instance.currentUser;
-    final userData = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-    return userData;
-  }
-
-  Future<void> _setMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lightMode = json.encode(
-      {
-        'Mode': isLight,
-      },
-    );
-    prefs.setString('LightMode', lightMode);
-  }
+  // Future<void> _setMode() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final lightMode = json.encode(
+  //     {
+  //       'Mode': isLight,
+  //     },
+  //   );
+  //   prefs.setString('LightMode', lightMode);
+  // }
 }
