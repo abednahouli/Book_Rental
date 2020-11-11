@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+//TODO: find way to update Theme Color without refreshing whole widget.
 class ColorMode extends ChangeNotifier{
   Color mainColor=Colors.green[900];
 
