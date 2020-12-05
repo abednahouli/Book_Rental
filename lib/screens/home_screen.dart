@@ -1,9 +1,8 @@
-import 'package:Book_Rental/screens/add_book_screen.dart';
-import 'package:Book_Rental/screens/book_details_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:Book_Rental/controllers/booksController.dart';
+import 'package:Book_Rental/models/bookModel.dart';
+import 'package:Book_Rental/models/booksModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'profile_screen.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,185 +10,179 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
+
+  Future<void> getBooksFunc() async {
+    bool hasData =
+        Provider.of<Books>(context, listen: false).getAllBooksList().isEmpty;
+    if (hasData)
+      await Provider.of<BooksController>(context, listen: false)
+          .getBooks(context);
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getBooksFunc();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isLight ? Colors.white : Colors.blueGrey,
-      body: FutureBuilder(
-        future: _getBooks(),
-        builder: (ctx, futureSnapshot) {
-          if (futureSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator(
-              backgroundColor: Theme.of(context).primaryColor,
-            ));
-          }
-          final bookDocs = futureSnapshot.data.documents;
-
+      backgroundColor: Colors.white,
+      body: Consumer<Books>(builder: (context, books, child) {
+        List<Book> bookList = books.getAllBooksList();
+        if (isLoading)
+          return Center(child: CircularProgressIndicator());
+        else {
           return RefreshIndicator(
-            // ignore: missing_return
-            onRefresh: () {
-              _refresh(context);
-            },
-            child: GridView.builder(
-              itemCount: bookDocs.length,
-              itemBuilder: (ctx, i) => Padding(
-                padding: const EdgeInsets.only(
-                    top: 15, bottom: 5, left: 25, right: 25),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: GridTile(
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                BookDetailsScreen(
-                              bookName: bookDocs[i].data()['bookName'],
-                              userId: bookDocs[i].data()['submit_user'],
-                              bookPrice:
-                                  bookDocs[i].data()['bookPrice'].toString(),
-                              publishYear: bookDocs[i].data()['publishDate'],
-                              imageUrl: bookDocs[i].data()['image_url'],
+            onRefresh: () => _refresh(),
+            child: ListView.builder(
+              itemCount: books.getAllBooksList().length,
+              itemBuilder: (ctx, i) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      top: 10,
+                      bottom: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                bookList[i].submitUserImage,
+                              ),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        );
-                      },
-                      child: Image.network(
-                        bookDocs[i].data()['image_url'],
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    footer: Container(
-                      color: Theme.of(context).primaryColor.withOpacity(0.8),
-                      height: 70,
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 15, top: 5, right: 15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      bookDocs[i].data()['bookName'],
-                                      style: TextStyle(
-                                        color: !isLight
-                                            ? Colors.blue
-                                            : Colors.amber,
-                                        fontSize: 27,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '\$' +
-                                          bookDocs[i]
-                                              .data()['bookPrice']
-                                              .toString(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18),
-                                    ),
-                                  ],
-                                ),
-                                Icon(
-                                  Icons.favorite_border,
-                                  size: 40,
-                                  color: !isLight ? Colors.blue : Colors.amber,
-                                )
-                              ],
-                            ),
-                          ],
+                          width: 40,
+                          height: 40,
                         ),
-                      ),
+                        SizedBox(
+                          width: 20,
+                        ),
+                        Text(
+                          bookList[i].submitUserName ?? "No name",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500, fontSize: 18),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 300,
+                    child: Image(
+                      fit: BoxFit.cover,
+                      image: NetworkImage(bookList[i].imageUrl),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20, right: 20, top: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Price: " + bookList[i].bookPrice.toString(),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          "Description: The financial sector contributes to the the success of our economy; it secures and creates jobs: over 650,000 people are currently working in the financial industry - enjoying attractive benefits and a wide range of career options.",
+                          maxLines: 4,
+                          textAlign: TextAlign.justify,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    color: Colors.grey,
+                    thickness: 1,
+                  ),
+                ],
               ),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1,
-                  childAspectRatio: 1,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10),
             ),
           );
-        },
-      ),
-      floatingActionButton: SpeedDial(
-        //for multiple floating action buttons
-        // both default to 16
-        marginRight: 18,
-        marginBottom: 20,
-        animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child: Icon(Icons.add),
-        visible: true,
-        // If true user is forced to close dial manually
-        // by tapping main button and overlay is not rendered.
-        closeManually: false,
-        curve: Curves.bounceIn,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.5,
-        onOpen: () => print('OPENING DIAL'),
-        onClose: () => print('DIAL CLOSED'),
-        tooltip: 'Speed Dial',
-        heroTag: 'speed-dial-hero-tag',
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 8.0,
-        shape: CircleBorder(),
-        children: [
-          SpeedDialChild(
-              child: Icon(Icons.add),
-              backgroundColor: Colors.red,
-              label: 'Add book',
-              labelStyle: TextStyle(fontSize: 18.0),
-              onTap: () =>
-                  Navigator.of(context).pushNamed(AddBookScreen.routeName)),
-          SpeedDialChild(
-            child: Icon(Icons.brush),
-            backgroundColor: Colors.blue,
-            label: 'disfunctional',
-            labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => print('SECOND CHILD'),
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.keyboard_voice),
-            backgroundColor: Colors.green,
-            label: 'disfunctional',
-            labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => print('THIRD CHILD'),
-          ),
-        ],
-      ),
+        }
+      }),
     );
   }
 
-  Future<void> _refresh(ctx) async {
+  Future<void> _refresh() async {
     setState(() {
-      print('refreshed');
+      isLoading = true;
     });
-    var message = 'Refreshed!!';
-    final snack = Scaffold.of(ctx).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.green[700],
-    ));
-    return snack;
+    await Provider.of<BooksController>(context, listen: false)
+        .getBooks(context);
+    setState(() {
+      isLoading = false;
+    });
   }
 
 // ignore: deprecated_member_use
-  Future<QuerySnapshot> _getBooks() async {
-    // ignore: deprecated_member_use
-    QuerySnapshot books = await FirebaseFirestore.instance
-        .collection('books')
-        .orderBy('createdAt')
-        .get();
-    return books;
-  }
+
 }
+
+// floatingActionButton: SpeedDial(
+//   //for multiple floating action buttons
+//   // both default to 16
+//   marginRight: 18,
+//   marginBottom: 20,
+//   animatedIcon: AnimatedIcons.menu_close,
+//   animatedIconTheme: IconThemeData(size: 22.0),
+//   // this is ignored if animatedIcon is non null
+//   // child: Icon(Icons.add),
+//   visible: true,
+//   // If true user is forced to close dial manually
+//   // by tapping main button and overlay is not rendered.
+//   closeManually: false,
+//   curve: Curves.bounceIn,
+//   overlayColor: Colors.black,
+//   overlayOpacity: 0.5,
+//   onOpen: () => print('OPENING DIAL'),
+//   onClose: () => print('DIAL CLOSED'),
+//   tooltip: 'Speed Dial',
+//   heroTag: 'speed-dial-hero-tag',
+//   backgroundColor: Colors.white,
+//   foregroundColor: Colors.black,
+//   elevation: 8.0,
+//   shape: CircleBorder(),
+//   children: [
+//     SpeedDialChild(
+//         child: Icon(Icons.add),
+//         backgroundColor: Colors.red,
+//         label: 'Add book',
+//         labelStyle: TextStyle(fontSize: 18.0),
+//         onTap: () =>
+//             Navigator.of(context).pushNamed(AddBookScreen.routeName)),
+//     SpeedDialChild(
+//       child: Icon(Icons.brush),
+//       backgroundColor: Colors.blue,
+//       label: 'disfunctional',
+//       labelStyle: TextStyle(fontSize: 18.0),
+//       onTap: () => print('SECOND CHILD'),
+//     ),
+//     SpeedDialChild(
+//       child: Icon(Icons.keyboard_voice),
+//       backgroundColor: Colors.green,
+//       label: 'disfunctional',
+//       labelStyle: TextStyle(fontSize: 18.0),
+//       onTap: () => print('THIRD CHILD'),
+//     ),
+//   ],
+// ),

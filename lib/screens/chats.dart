@@ -2,7 +2,6 @@ import 'package:Book_Rental/screens/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
 
 class Chats extends StatefulWidget {
   @override
@@ -16,7 +15,7 @@ class _ChatsState extends State<Chats> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: isLight ? Colors.green[100] : Colors.blueGrey,
+        color: Colors.green[100],
         child: FutureBuilder(
           future: FirebaseFirestore.instance
               .collection('coms')

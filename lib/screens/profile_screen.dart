@@ -1,16 +1,13 @@
-import 'package:Book_Rental/models/colorMode.dart';
 import 'package:Book_Rental/models/profileModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen(this.function);
-  final void Function() function;
+
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-bool isLight = true;
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isEdit = false;
@@ -19,7 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isLight ? Colors.green[100] : Colors.blueGrey,
+      backgroundColor: Colors.green[100],
       body: Center(
         child: Container(
           height: 400,
@@ -120,20 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(isLight ? 'Light Mode' : 'Dark Mode'),
-                      Switch(
-                        value: !isLight,
-                        onChanged: (newValue) {
-                          setState(() {
-                            Provider.of<ColorMode>(context,listen: false).changeMainColor();
-                          });
-                        },
                       ),
                     ],
                   ),

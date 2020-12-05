@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Book_Rental/models/profileModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class AddBookScreen extends StatefulWidget {
   static const routeName = '/add-book';
@@ -62,6 +64,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
         'createdAt': Timestamp.now(),
         'publishDate': publishdate,
         'submit_user': FirebaseAuth.instance.currentUser.uid,
+        'username': Provider.of<Profile>(context,listen:false).username,
         'image_url': '',
       });
       final data = await FirebaseFirestore.instance
