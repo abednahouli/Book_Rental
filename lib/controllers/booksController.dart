@@ -104,14 +104,22 @@ class BooksController extends ChangeNotifier {
     booksProvider.notifyListeners();
   }
 
-  void searchBookName(String searchedValue,BuildContext context){
+  void searchBookName(String searchedValue,BuildContext context,{int genre}){
     final booksProvider = Provider.of<Books>(context, listen: false);
     booksProvider.searchBooks.clear();
     booksProvider.allBooks.forEach((book){
-      print(book);
-      print(searchedValue);
-      if(book.bookName.toLowerCase().replaceAll(new RegExp(r"\s+"), "").contains(searchedValue.toLowerCase().replaceAll(new RegExp(r"\s+"), ""))){
-        booksProvider.searchBooks.add(book);
+      if(genre!=null){
+        
+        if(book.genre==genre){
+          booksProvider.searchBooks.add(book);
+          print(book.genre);
+          print(genre);
+          print(booksProvider.searchBooks);
+        }
+      }else{
+        if(book.bookName.toLowerCase().replaceAll(new RegExp(r"\s+"), "").contains(searchedValue.toLowerCase().replaceAll(new RegExp(r"\s+"), ""))){
+          booksProvider.searchBooks.add(book);
+        }
       }
     });
   }

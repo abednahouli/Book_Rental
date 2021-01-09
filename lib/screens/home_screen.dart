@@ -1,3 +1,4 @@
+import 'package:Book_Rental/configs/genreList.dart';
 import 'package:Book_Rental/controllers/booksController.dart';
 import 'package:Book_Rental/models/bookModel.dart';
 import 'package:Book_Rental/models/booksModel.dart';
@@ -25,8 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  Future<void> _searchFunc(value) async {
-    Provider.of<BooksController>(context, listen: false).searchBookName(value,context);
+  Future<void> _searchFunc(value,{int genre}) async {
+    Provider.of<BooksController>(context, listen: false).searchBookName(value,context,genre: genre!=null?genre:null);
   }
 
   Widget _searchBar() {
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       _searchFunc(value);
                     }
                     if (value.isEmpty) {
+                      Provider.of<Books>(context, listen: false).searchBooks.clear();
                       _searchEnabled = false;
                     } else {
                       _searchEnabled = true;
@@ -88,6 +90,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _genreHorizontalScroll(){
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      height: 40,
+      width: MediaQuery.of(context).size.width,
+      child: ListView.builder(scrollDirection: Axis.horizontal,itemCount: GenreList.genres.length,itemBuilder: (context,i){
+        return Row(
+          children: [
+            GestureDetector(
+              onTap: (){
+                setState(() {
+                _searchEnabled=true;
+                                  
+                                });
+                _searchFunc(GenreList.genres[i],genre: i);
+
+              },
+              child: Container(
+                decoration: BoxDecoration(color: Colors.green[100],borderRadius: BorderRadius.circular(20)),
+              child: Center(
+                child: Text(GenreList.genres[i],style:TextStyle(fontWeight: FontWeight.bold),),
+                ),
+                width: 120,
+              ),
+            ),
+            SizedBox(width: 10,)
+          ],
+        );
+      },),
+    );
+  }
+
 
   @override
   void initState() {
@@ -108,8 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           _searchBar(),
+          _genreHorizontalScroll(),
+          SizedBox(height: 10,),
           Container(
-            height:MediaQuery.of(context).size.height-206,
+            height:MediaQuery.of(context).size.height-256,
             child: 
             !_searchEnabled?Consumer<Books>(
               builder: (context, books, child) {

@@ -1,5 +1,5 @@
 class GenreList {
-  List<String> genres =[
+  static List<String> genres =[
   "Action" ,
   "Drama" ,
   "Classic" ,
