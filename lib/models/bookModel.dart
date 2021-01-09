@@ -9,14 +9,19 @@ class Book {
   Timestamp createdAt;
   Timestamp publishDate;
   String submitUserName;
+  String bookId;
+  bool isFavorite;
 
-  Book(
-      {this.bookName,
-      this.bookPrice,
-      this.createdAt,
-      this.imageUrl,
-      this.publishDate,
-      this.submitUserId,
-      this.submitUserName,
-      this.submitUserImage});
+  Book({
+    this.bookName,
+    this.bookPrice,
+    this.createdAt,
+    this.imageUrl,
+    this.publishDate,
+    this.submitUserId,
+    this.submitUserName,
+    this.submitUserImage,
+    this.bookId,
+    this.isFavorite,
+  });
 }

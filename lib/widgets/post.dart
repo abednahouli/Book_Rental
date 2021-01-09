@@ -1,32 +1,32 @@
 import 'package:Book_Rental/controllers/booksController.dart';
 import 'package:Book_Rental/models/bookModel.dart';
-import 'package:Book_Rental/screens/chat_screen.dart';
+import 'package:Book_Rental/screens/book_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class BookDetailsScreen extends StatefulWidget {
-  static const routeName = '/book-details';
-
+class Post extends StatefulWidget {
   final Book book;
-
-  BookDetailsScreen({
-    this.book,
-  });
-
+  Post(this.book);
   @override
-  _BookDetailsScreenState createState() => _BookDetailsScreenState();
+  _PostState createState() => _PostState();
 }
 
-class _BookDetailsScreenState extends State<BookDetailsScreen> {
+class _PostState extends State<Post> {
   bool _isFavorite;
 
   @override
   Widget build(BuildContext context) {
     _isFavorite = widget.book.isFavorite;
-
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.book.bookName)),
-      body: Column(
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) =>
+                BookDetailsScreen(book: widget.book),
+          ),
+        );
+      },
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -108,28 +108,19 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                 ),
                 Text(
                   "Description: The financial sector contributes to the the success of our economy; it secures and creates jobs: over 650,000 people are currently working in the financial industry - enjoying attractive benefits and a wide range of career options.",
-                  
+                  maxLines: 4,
                   textAlign: TextAlign.justify,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                 ),
               ],
             ),
           ),
+          Divider(
+            color: Colors.grey,
+            thickness: 1,
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  ChatScreen(widget.book.submitUserId),
-            ),
-          );
-        },
-        backgroundColor: Theme.of(context).primaryColor,
-        child: Icon(
-          Icons.chat,
-        ),
       ),
     );
   }

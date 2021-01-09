@@ -48,11 +48,11 @@ class _AuthScreenState extends State<AuthScreen> {
          await ref.putFile(image).onComplete;
 
          final url = await ref.getDownloadURL();
-
+        List<String>newUserFavorites=[];
         await FirebaseFirestore.instance
             .collection('users')
             .doc(authResult.user.uid)
-            .set({'username': userName, 'email': email,'image_url':url});
+            .set({'username': userName, 'email': email,'image_url':url,'favorites':newUserFavorites});
       }
     } catch (err) {
       var message = 'An error occured,please check your credentials!';

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Book_Rental/controllers/booksController.dart';
 import 'package:Book_Rental/models/profileModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,6 +27,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
   File bookImage;
   DateTime publishdate;
   BuildContext ctx;
+  final ImagePicker _picker = ImagePicker();
 
   bool isLoading = false;
 
@@ -52,19 +54,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
     return price;
   }
 
-  Future<void> addBook(bookName) async {
+  Future<void> addBook(bookName, ctx) async {
     setState(() {
       isLoading = true;
     });
 
     try {
+      Timestamp timeStamp = Timestamp.now();
       await FirebaseFirestore.instance.collection('books').doc().set({
         'bookName': bookName,
         'bookPrice': getPriceDouble(),
-        'createdAt': Timestamp.now(),
+        'createdAt': timeStamp,
         'publishDate': publishdate,
         'submit_user': FirebaseAuth.instance.currentUser.uid,
-        'username': Provider.of<Profile>(context,listen:false).username,
+        'username': Provider.of<Profile>(context, listen: false).username,
         'image_url': '',
       });
       final data = await FirebaseFirestore.instance
@@ -88,7 +91,17 @@ class _AddBookScreenState extends State<AddBookScreen> {
           .collection('books')
           .doc(newBookId)
           .update({'image_url': url});
+
+      // Provider.of<BooksController>(ctx, listen: false).addSingleBook(
+      //   bookName,
+      //   double.parse(price),
+      //   url,
+      //   timeStamp,
+      //   Timestamp.fromDate(publishdate),
+      //   ctx,
+      // );
     } catch (err) {
+      print(err);
       var message = 'An error occured!';
       Scaffold.of(ctx).showSnackBar(SnackBar(
         content: Text(message),
@@ -105,147 +118,161 @@ class _AddBookScreenState extends State<AddBookScreen> {
     });
   }
 
-  void _trySubmit() {
+  void _trySubmit(BuildContext ctx) {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
     if (isValid) {
       _formKey.currentState.save();
-      addBook(
-        bookName.trim(),
-      );
+      addBook(bookName.trim(), ctx);
     }
   }
 
-  Future getImage() async {
-    // ignore: deprecated_member_use
-    var image = await ImagePicker.pickImage(
-        source: ImageSource.camera, imageQuality: 100, maxWidth: 150);
+  Future getImage(bool camera) async {
+    print(camera ? "camera" : "gallery");
+    var image = await _picker.getImage(
+      source: camera ? ImageSource.camera : ImageSource.gallery,
+    );
 
     setState(() {
-      bookImage = image;
+      bookImage = File(image.path);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Add a Book'),
-      ),
-      body: Scaffold(
-        backgroundColor: Colors.green[100],
-        body: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Card(
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.grey,
-                        backgroundImage:
-                            bookImage != null ? FileImage(bookImage) : null,
-                        radius: 40,
-                      ),
-                      FlatButton.icon(
-                        onPressed:
-                            // ignore: unnecessary_statements
-                            getImage,
-                        textColor: Theme.of(context).primaryColor,
-                        icon: Icon(Icons.image),
-                        label: Text('Add image'),
-                      ),
-                      TextFormField(
-                        key: ValueKey('bookName'),
-                        controller: _controller,
-                        keyboardType: TextInputType.text,
-                        decoration: InputDecoration(
-                          labelText: 'Book Name...',
-                          errorStyle: TextStyle(color: Colors.red),
-                        ),
-                        validator: (value) {
-                          if (value.isEmpty || value.length < 4) {
-                            return 'Book name should be at least 4 characters long.';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          bookName = value;
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Text('Price: '),
-                          IconButton(
-                              icon: Icon(
-                                Icons.arrow_back_ios,
-                                size: 20,
-                                color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.green[100],
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Card(
+          child: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      backgroundImage:
+                          bookImage != null ? FileImage(bookImage) : null,
+                      radius: 40,
+                    ),
+                    FlatButton.icon(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        return showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text('Choose Source'),
+                            actions: [
+                              FlatButton(
+                                onPressed: () {
+                                  getImage(false);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Gallery'),
                               ),
-                              onPressed: () {
-                                changeprice(false);
-                              }),
-                          Text('\$$price'),
-                          IconButton(
-                              icon: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: Theme.of(context).primaryColor,
+                              FlatButton(
+                                onPressed: () {
+                                  getImage(true);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Camera'),
                               ),
-                              onPressed: () {
-                                changeprice(true);
-                              }),
-                        ],
+                            ],
+                          ),
+                        );
+                      },
+                      textColor: Theme.of(context).primaryColor,
+                      icon: Icon(Icons.image),
+                      label: Text('Add image'),
+                    ),
+                    TextFormField(
+                      key: ValueKey('bookName'),
+                      controller: _controller,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: 'Book Name...',
+                        errorStyle: TextStyle(color: Colors.red),
                       ),
-                      FlatButton(
-                        onPressed: () {
-                          DatePicker.showDatePicker(context,
-                              showTitleActions: true,
-                              minTime: DateTime(2000, 3, 5),
-                              maxTime: DateTime.now(), onChanged: (date) {
-                            var date1 = date.year;
-                            print('change $date1');
-                          }, onConfirm: (date) {
-                            var date1 = date;
-                            publishdate = date1;
-                            print('confirm $date1');
-                          },
-                              currentTime: DateTime.now(),
-                              locale: LocaleType.en);
-                        },
-                        child: Text(
-                          'show date time picker (English)',
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                      validator: (value) {
+                        if (value.isEmpty || value.length < 4) {
+                          return 'Book name should be at least 4 characters long.';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        bookName = value;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Text('Price: '),
+                        IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              size: 20,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            onPressed: () {
+                              changeprice(false);
+                            }),
+                        Text('\$$price'),
+                        IconButton(
+                            icon: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 20,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            onPressed: () {
+                              changeprice(true);
+                            }),
+                      ],
+                    ),
+                    FlatButton(
+                      onPressed: () {
+                        DatePicker.showDatePicker(context,
+                            showTitleActions: true,
+                            minTime: DateTime(2000, 3, 5),
+                            maxTime: DateTime.now(), onChanged: (date) {
+                          var date1 = date.year;
+                          print('change $date1');
+                        }, onConfirm: (date) {
+                          var date1 = date;
+                          publishdate = date1;
+                          print('confirm $date1');
+                        }, currentTime: DateTime.now(), locale: LocaleType.en);
+                      },
+                      child: Text(
+                        'show date time picker (English)',
+                        style: TextStyle(color: Colors.blue),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 30, top: 10),
-                        child: isLoading
-                            ? SpinKitRotatingCircle(
-                                color: Colors.green,
-                                size: 50.0,
-                              )
-                            : ButtonTheme(
-                                minWidth: 200,
-                                child: RaisedButton(
-                                  color: Theme.of(context).primaryColor,
-                                  child: Text(
-                                    'Submit Book',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  onPressed: () {
-                                    _trySubmit();
-                                  },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 30, top: 10),
+                      child: isLoading
+                          ? SpinKitRotatingCircle(
+                              color: Colors.green,
+                              size: 50.0,
+                            )
+                          : ButtonTheme(
+                              minWidth: 200,
+                              child: RaisedButton(
+                                color: Theme.of(context).primaryColor,
+                                child: Text(
+                                  'Submit Book',
+                                  style: TextStyle(color: Colors.white),
                                 ),
+                                onPressed: () {
+                                  _trySubmit(context);
+                                },
                               ),
-                      ),
-                    ],
-                  ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
             ),
