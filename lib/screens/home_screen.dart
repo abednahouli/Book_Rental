@@ -98,12 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView.builder(scrollDirection: Axis.horizontal,itemCount: GenreList.genres.length,itemBuilder: (context,i){
         return Row(
           children: [
-            GestureDetector(
+            InkWell(
               onTap: (){
                 setState(() {
                 _searchEnabled=true;
-                                  
-                                });
+                });
                 _searchFunc(GenreList.genres[i],genre: i);
 
               },
