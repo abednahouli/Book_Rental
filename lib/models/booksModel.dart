@@ -3,10 +3,15 @@ import 'package:flutter/cupertino.dart';
 
 class Books extends ChangeNotifier {
   List<Book> allBooks = [];
+  List<Book> searchBooks=[];
   List<Book> favoriteBooks = [];
 
   List<Book> getAllBooksList() {
     return [...allBooks];
+  }
+
+  List<Book> getSearchBooksList() {
+    return [...searchBooks];
   }
 
   List<Book> getFavoriteBooksList() {

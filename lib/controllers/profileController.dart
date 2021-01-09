@@ -9,11 +9,12 @@ class ProfileController extends ChangeNotifier {
     while (loop) {
       try {
         final profileProvider = Provider.of<Profile>(context, listen: false);
-        User user = FirebaseAuth.instance.currentUser;
+        String userId = FirebaseAuth.instance.currentUser.uid;
         final response = await FirebaseFirestore.instance
             .collection('users')
-            .doc(user.uid)
+            .doc(userId)
             .get();
+        profileProvider.id= userId;
         profileProvider.email = response.data()["email"];
         profileProvider.imageUrl = response.data()["image_url"];
         profileProvider.username = response.data()["username"];

@@ -5,6 +5,7 @@ class Book {
   String imageUrl;
   String submitUserImage;
   String submitUserId;
+  int genre;
   double bookPrice;
   Timestamp createdAt;
   Timestamp publishDate;
@@ -17,6 +18,7 @@ class Book {
     this.bookPrice,
     this.createdAt,
     this.imageUrl,
+    this.genre,
     this.publishDate,
     this.submitUserId,
     this.submitUserName,

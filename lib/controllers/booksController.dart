@@ -43,6 +43,7 @@ class BooksController extends ChangeNotifier {
                     bookName: newBookData["bookName"],
                     bookPrice: newBookData["bookPrice"],
                     imageUrl: newBookData["image_url"],
+                    genre: newBookData["genre"],
                     submitUserImage: document.data()["image_url"],
                     createdAt: newBookData["createdAt"],
                     publishDate: newBookData["publishDate"],
@@ -101,6 +102,18 @@ class BooksController extends ChangeNotifier {
         .doc(FirebaseAuth.instance.currentUser.uid)
         .update({'favorites': newFavorites});
     booksProvider.notifyListeners();
+  }
+
+  void searchBookName(String searchedValue,BuildContext context){
+    final booksProvider = Provider.of<Books>(context, listen: false);
+    booksProvider.searchBooks.clear();
+    booksProvider.allBooks.forEach((book){
+      print(book);
+      print(searchedValue);
+      if(book.bookName.toLowerCase().replaceAll(new RegExp(r"\s+"), "").contains(searchedValue.toLowerCase().replaceAll(new RegExp(r"\s+"), ""))){
+        booksProvider.searchBooks.add(book);
+      }
+    });
   }
 
   // void addSingleBook(
